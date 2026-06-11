@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hanko Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0f0f0f;
+        --panel: #171717;
+        --panel-2: #1d1d1f;
+        --text: #f4f4f5;
+        --muted: #a1a1aa;
+        --line: #2a2a2d;
+        --line-strong: #3f3f46;
+        --accent: #8b5cf6;
+        --accent-strong: #a78bfa;
+        --accent-tint: rgba(139, 92, 246, 0.14);
+        --danger: #fb7185;
+        --shadow: rgba(0, 0, 0, 0.28);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        letter-spacing: 0;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .page {
+        display: grid;
+        min-height: 100vh;
+        place-items: center;
+        padding: 32px 18px;
+      }
+
+      .shell {
+        width: min(100%, 1040px);
+        display: grid;
+        grid-template-columns: minmax(0, 0.95fr) minmax(360px, 0.78fr);
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: 0 24px 60px var(--shadow);
+      }
+
+      .brand-panel {
+        display: flex;
+        min-height: 640px;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 48px;
+        border-right: 1px solid var(--line);
+        background: #111111;
+      }
+
+      .logo-mark {
+        display: inline-grid;
+        width: 54px;
+        height: 54px;
+        place-items: center;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: #18181b;
+        color: var(--accent-strong);
+        font-size: 1.45rem;
+        font-weight: 700;
+      }
+
+      .brand-copy {
+        max-width: 520px;
+      }
+
+      .eyebrow {
+        margin: 0 0 18px;
+        color: var(--accent-strong);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2.4rem, 6vw, 5rem);
+        line-height: 0.95;
+        letter-spacing: 0;
+      }
+
+      .subtitle {
+        max-width: 32rem;
+        margin: 24px 0 0;
+        color: var(--muted);
+        font-size: 1rem;
+        line-height: 1.75;
+      }
+
+      .meta-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .meta-item {
+        border-top: 1px solid var(--line);
+        padding-top: 14px;
+      }
+
+      .meta-item strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--text);
+        font-size: 0.86rem;
+      }
+
+      .login-panel {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 42px;
+        background: var(--panel);
+      }
+
+      .form-header {
+        margin-bottom: 28px;
+      }
+
+      .form-header h2 {
+        margin: 0 0 8px;
+        font-size: 1.35rem;
+        font-weight: 700;
+      }
+
+      .form-header p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.93rem;
+        line-height: 1.6;
+      }
+
+      .section-label {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .role-grid {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 24px;
+      }
+
+      .role-card {
+        display: flex;
+        width: 100%;
+        min-height: 72px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel-2);
+        color: var(--text);
+        cursor: pointer;
+        padding: 14px 16px;
+        text-align: left;
+        transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+      }
+
+      .role-card:hover {
+        border-color: var(--line-strong);
+        transform: translateY(-1px);
+      }
+
+      .role-card[aria-pressed="true"] {
+        border-color: var(--accent);
+        background: var(--accent-tint);
+      }
+
+      .role-title {
+        display: block;
+        font-size: 0.98rem;
+        font-weight: 700;
+      }
+
+      .role-subtitle {
+        display: block;
+        margin-top: 5px;
+        color: var(--muted);
+        font-size: 0.78rem;
+      }
+
+      .role-card[aria-pressed="true"] .role-subtitle {
+        color: #d8b4fe;
+      }
+
+      .role-dot {
+        display: grid;
+        width: 18px;
+        height: 18px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid var(--line-strong);
+        border-radius: 50%;
+      }
+
+      .role-card[aria-pressed="true"] .role-dot {
+        border-color: var(--accent-strong);
+      }
+
+      .role-card[aria-pressed="true"] .role-dot::after {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent-strong);
+        content: "";
+      }
+
+      .field-group {
+        display: grid;
+        gap: 16px;
+      }
+
+      .credentials.is-hidden {
+        display: none;
+      }
+
+      label {
+        display: grid;
+        gap: 8px;
+        color: var(--text);
+        font-size: 0.86rem;
+        font-weight: 600;
+      }
+
+      label span {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      label small {
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 500;
+      }
+
+      input {
+        width: 100%;
+        min-height: 48px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        outline: none;
+        background: #101012;
+        color: var(--text);
+        padding: 0 14px;
+        transition: border-color 160ms ease, box-shadow 160ms ease;
+      }
+
+      input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+      }
+
+      .submit-button {
+        width: 100%;
+        min-height: 50px;
+        margin-top: 22px;
+        border: 1px solid var(--accent);
+        border-radius: 8px;
+        background: var(--accent);
+        color: #ffffff;
+        cursor: pointer;
+        font-weight: 700;
+        transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+      }
+
+      .submit-button:hover {
+        border-color: var(--accent-strong);
+        background: #7c3aed;
+        transform: translateY(-1px);
+      }
+
+      .error {
+        min-height: 22px;
+        margin: 14px 0 0;
+        color: var(--danger);
+        font-size: 0.84rem;
+        line-height: 1.5;
+      }
+
+      .success {
+        color: #86efac;
+      }
+
+      @media (max-width: 860px) {
+        .shell {
+          grid-template-columns: 1fr;
+        }
+
+        .brand-panel {
+          min-height: auto;
+          gap: 56px;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+          padding: 34px 26px;
+        }
+
+        .login-panel {
+          padding: 32px 26px;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .page {
+          align-items: start;
+          padding: 0;
+        }
+
+        .shell {
+          min-height: 100vh;
+          border: 0;
+          border-radius: 0;
+        }
+
+        .brand-panel,
+        .login-panel {
+          padding: 28px 18px;
+        }
+
+        .meta-row {
+          grid-template-columns: 1fr;
+        }
+
+        .section-label,
+        label span {
+          flex-direction: column;
+          gap: 4px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="shell" aria-label="Hanko login">
+        <div class="brand-panel">
+          <div class="logo-mark" aria-label="Hanko">判</div>
+
+          <div class="brand-copy">
+            <p class="eyebrow">Enterprise approval system</p>
+            <h1>Hanko<br />判子</h1>
+            <p class="subtitle">
+              Secure role-based access for approval routing, internal requests, and executive sign-off.
+              承認ルート、社内申請、決裁のための安全なロール別アクセス。
+            </p>
+          </div>
+
+          <div class="meta-row" aria-label="Security notes">
+            <div class="meta-item">
+              <strong>SSO Ready</strong>
+              シングルサインオン対応
+            </div>
+            <div class="meta-item">
+              <strong>Audit Logs</strong>
+              監査ログ
+            </div>
+            <div class="meta-item">
+              <strong>Role Access</strong>
+              権限管理
+            </div>
+          </div>
+        </div>
+
+        <form class="login-panel" id="loginForm" novalidate>
+          <div class="form-header">
+            <h2>Sign in · ログイン</h2>
+            <p>Select your role, then enter your account credentials. 役割を選択して認証情報を入力してください。</p>
+          </div>
+
+          <div class="section-label" id="roleLabel">
+            <span>Role</span>
+            <span>役割</span>
+          </div>
+          <div class="role-grid" role="group" aria-labelledby="roleLabel">
+            <button class="role-card" type="button" data-role="Submitter" aria-pressed="false">
+              <span>
+                <span class="role-title">担当 / 主任</span>
+                <span class="role-subtitle">Tantō / Shunin · Submitter</span>
+              </span>
+              <span class="role-dot" aria-hidden="true"></span>
+            </button>
+            <button class="role-card" type="button" data-role="Team Supervisor" aria-pressed="false">
+              <span>
+                <span class="role-title">係長</span>
+                <span class="role-subtitle">Kakarichō · Team Supervisor</span>
+              </span>
+              <span class="role-dot" aria-hidden="true"></span>
+            </button>
+            <button class="role-card" type="button" data-role="Section Manager" aria-pressed="false">
+              <span>
+                <span class="role-title">課長</span>
+                <span class="role-subtitle">Kachō · Section Manager</span>
+              </span>
+              <span class="role-dot" aria-hidden="true"></span>
+            </button>
+            <button class="role-card" type="button" data-role="Department Head" aria-pressed="false">
+              <span>
+                <span class="role-title">部長</span>
+                <span class="role-subtitle">Buchō · Department Head</span>
+              </span>
+              <span class="role-dot" aria-hidden="true"></span>
+            </button>
+            <button class="role-card" type="button" data-role="President" aria-pressed="false">
+              <span>
+                <span class="role-title">社長</span>
+                <span class="role-subtitle">Shachō · President</span>
+              </span>
+              <span class="role-dot" aria-hidden="true"></span>
+            </button>
+          </div>
+
+          <div class="credentials is-hidden" id="credentials">
+            <div class="field-group">
+              <label for="username">
+                <span>Username <small>ユーザー名</small></span>
+                <input id="username" name="username" type="text" autocomplete="username" required />
+              </label>
+
+              <label for="password">
+                <span>Password <small>パスワード</small></span>
+                <input id="password" name="password" type="password" autocomplete="current-password" required />
+              </label>
+            </div>
+
+            <button class="submit-button" type="submit">Sign in · ログイン</button>
+            <p class="error" id="message" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <script>
+      const roleCards = Array.from(document.querySelectorAll(".role-card"));
+      const form = document.querySelector("#loginForm");
+      const credentials = document.querySelector("#credentials");
+      const username = document.querySelector("#username");
+      const password = document.querySelector("#password");
+      const message = document.querySelector("#message");
+      let selectedRole = "";
+
+      roleCards.forEach((card) => {
+        card.addEventListener("click", () => {
+          selectedRole = card.dataset.role;
+          roleCards.forEach((item) => item.setAttribute("aria-pressed", String(item === card)));
+          credentials.classList.remove("is-hidden");
+          message.textContent = "";
+          message.classList.remove("success");
+          username.focus();
+        });
+      });
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        message.classList.remove("success");
+
+        const missing = [];
+        if (!selectedRole) missing.push("role · 役割");
+        if (!username.value.trim()) missing.push("username · ユーザー名");
+        if (!password.value.trim()) missing.push("password · パスワード");
+
+        if (missing.length > 0) {
+          message.textContent = `Required: ${missing.join(", ")}`;
+          return;
+        }
+
+        message.classList.add("success");
+        message.textContent = `Ready to sign in as ${selectedRole}.`;
+      });
+    </script>
+  </body>
+</html>
