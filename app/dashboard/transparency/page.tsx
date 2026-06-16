@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Lang = "jp" | "en";
 type SortKey = "avgResponse" | "overdue" | "pending";
@@ -142,7 +143,7 @@ export default function TransparencyDashboard() {
   const onTimeCount = MOCK_MANAGERS.reduce((s, m) => s + m.approved + m.rejected + m.revised, 0) - totalOverdue;
   const onTimeRate = Math.round((onTimeCount / totalRequests) * 100);
   const avgResponse = (MOCK_MANAGERS.reduce((s, m) => s + m.avgResponseHours, 0) / MOCK_MANAGERS.length).toFixed(1);
-
+  const router = useRouter();
   return (
     <div style={{ fontFamily: "Inter, system-ui, sans-serif", background: "#0a0a0a", minHeight: "100vh", color: "#e5e5e5" }}>
       {/* Navbar */}
@@ -152,7 +153,20 @@ export default function TransparencyDashboard() {
           <button onClick={() => setLang(lang === "en" ? "jp" : "en")} style={{ background: "#1f1f1f", border: "1px solid #2f2f2f", color: "#aaa", borderRadius: "4px", padding: "4px 12px", cursor: "pointer", fontSize: "12px", fontWeight: 600 }}>
             {lang === "en" ? "JP" : "EN"}
           </button>
-          <button style={{ background: "transparent", border: "1px solid #2f2f2f", color: "#888", borderRadius: "4px", padding: "4px 12px", cursor: "pointer", fontSize: "12px" }}>{t.logout}</button>
+            <button 
+            onClick={() => router.push('/login')}
+            style={{ 
+                background: "transparent", 
+                border: "1px solid #ef4444", 
+                color: "#ef4444", 
+                borderRadius: "4px", 
+                padding: "4px 12px", 
+                cursor: "pointer", 
+                fontSize: "12px" 
+            }}
+            >
+            {t.logout}
+            </button>        
         </div>
       </nav>
 

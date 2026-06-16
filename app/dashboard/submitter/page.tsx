@@ -1,30 +1,9 @@
-"use client";
+'use client';
 
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-type Language = "jp" | "en" | "mn";
-type RequestStatus = "pending" | "approved" | "rejected";
-
-type RequestType = {
-  value: string;
-  labels: Record<Language, string>;
-};
-
-type MockRequest = {
-  id: string;
-  type: RequestType["value"];
-  submittedAt: string;
-  approverLevel: string;
-  status: RequestStatus;
-  activeLevel: number;
-  timeRemaining: string;
-};
-
-const languages: { value: Language; label: string }[] = [
-  { value: "jp", label: "JP" },
-  { value: "en", label: "EN" },
-  { value: "mn", label: "MN" },
-];
+type Language = 'jp' | 'en' | 'mn';
 
 const text = {
   jp: {
@@ -65,7 +44,7 @@ const text = {
     },
   },
   en: {
-    workspace: "Approval workspace",
+    workspace: "Approval Workspace",
     navNewRequest: "New Request",
     navMyRequests: "My Requests",
     role: "Submitter",
@@ -140,367 +119,314 @@ const text = {
   },
 };
 
-const requestTypes: RequestType[] = [
-  {
-    value: "expense",
-    labels: { jp: "経費申請", en: "Expense", mn: "Зардал" },
-  },
-  {
-    value: "document",
-    labels: { jp: "文書承認", en: "Document", mn: "Баримт бичиг" },
-  },
-  {
-    value: "contract",
-    labels: { jp: "契約承認", en: "Contract", mn: "Гэрээ" },
-  },
-  {
-    value: "other",
-    labels: { jp: "その他", en: "Other", mn: "Бусад" },
-  },
+const requestTypes = [
+  { value: "expense", labels: { jp: "経費申請", en: "Expense", mn: "Зардал" } },
+  { value: "sop", labels: { jp: "SOP改訂", en: "SOP Update", mn: "SOP Өөрчлөлт" } },
+  { value: "proposal", labels: { jp: "企画提案", en: "Proposal", mn: "Төсөл" } },
 ];
 
 const approvalLevels = ["submitter", "supervisor", "manager", "head", "president"] as const;
 
-const mockRequests: MockRequest[] = [
-  {
-    id: "REQ-2401",
-    type: "expense",
-    submittedAt: "2026-06-08",
-    approverLevel: "supervisor",
-    status: "pending",
-    activeLevel: 1,
-    timeRemaining: "18h",
-  },
-  {
-    id: "REQ-2398",
-    type: "document",
-    submittedAt: "2026-06-03",
-    approverLevel: "manager",
-    status: "approved",
-    activeLevel: 2,
-    timeRemaining: "0h",
-  },
-  {
-    id: "REQ-2389",
-    type: "contract",
-    submittedAt: "2026-05-29",
-    approverLevel: "head",
-    status: "rejected",
-    activeLevel: 3,
-    timeRemaining: "0h",
-  },
-];
+const mockRequests = [
+  { id: "REQ-2401", type: "expense", submittedAt: "2026-06-08", approverLevel: "supervisor", status: "pending", activeLevel: 1, timeRemaining: "18h" },
+  { id: "REQ-2398", type: "sop", submittedAt: "2026-06-03", approverLevel: "manager", status: "approved", activeLevel: 2, timeRemaining: "0h" },
+  { id: "REQ-2389", type: "proposal", submittedAt: "2026-05-29", approverLevel: "head", status: "rejected", activeLevel: 3, timeRemaining: "0h" },
+] as const;
 
-const statusStyles: Record<RequestStatus, string> = {
-  pending: "border-amber-400/30 bg-amber-400/10 text-amber-200",
-  approved: "border-emerald-400/30 bg-emerald-400/10 text-emerald-200",
-  rejected: "border-red-400/30 bg-red-400/10 text-red-200",
-};
-
-export default function SubmitterDashboardPage() {
-  const [activeLanguage, setActiveLanguage] = useState<Language>("jp");
-  const [requestType, setRequestType] = useState(requestTypes[0].value);
-  const [amount, setAmount] = useState("");
-  const [justification, setJustification] = useState("");
+export default function SubmitterDashboard() {
+  const router = useRouter();
+  const [activeLanguage, setActiveLanguage] = useState<Language>('jp');
+  const [requestType, setRequestType] = useState('expense');
+  const [amount, setAmount] = useState('');
+  const [justification, setJustification] = useState('');
   const [attachment, setAttachment] = useState<File | null>(null);
-  const [message, setMessage] = useState("");
-  const [isSubmittedMessage, setIsSubmittedMessage] = useState(false);
+  const [message, setMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
+
   const t = text[activeLanguage];
 
-  function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
-    setAttachment(event.target.files?.[0] ?? null);
-  }
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setAttachment(e.target.files?.[0] ?? null);
+  };
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-    if (!requestType || !amount || justification.trim().length < 50) {
+    if (justification.trim().length < 50) {
       setMessage(t.validation);
-      setIsSubmittedMessage(false);
+      setIsSuccess(false);
       return;
     }
 
-    const selectedType = requestTypes.find((type) => type.value === requestType);
-
-    console.log({
-      requestType: selectedType?.labels.en,
-      amount,
-      justification,
-      attachment: attachment?.name ?? null,
-    });
-
+    console.log({ requestType, amount, justification, attachment: attachment?.name });
+    
     setMessage(t.submitted);
-    setIsSubmittedMessage(true);
-  }
+    setIsSuccess(true);
+    setJustification('');
+    setAmount('');
+    setAttachment(null);
+  };
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-zinc-50">
-      <nav className="border-b border-zinc-800 bg-[#0d0d0d]">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded border border-zinc-700 bg-zinc-950 text-lg font-bold text-violet-300">
+    <div style={{ minHeight: '100vh', backgroundColor: '#0a0a0a', color: '#e5e5e5', fontFamily: 'Inter, system-ui, sans-serif' }}>
+      {/* Navbar */}
+      <nav style={{ backgroundColor: '#111111', borderBottom: '1px solid #1f1f1f', padding: '16px 24px' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '4px', backgroundColor: '#1f1f1f', border: '1px solid #3b1fa8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', color: '#7c3aed', fontWeight: 'bold' }}>
                 判
               </div>
               <div>
-                <p className="text-base font-semibold tracking-normal text-white">
-                  Hanko 判子
-                </p>
-                <p className="text-xs text-zinc-500">{t.workspace}</p>
+                <div style={{ fontSize: '20px', fontWeight: '700' }}>判子 Hanko</div>
+                <div style={{ fontSize: '12px', color: '#666' }}>{t.workspace}</div>
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div className="flex w-fit rounded border border-zinc-800 bg-zinc-950 p-1">
-                {languages.map((language) => {
-                  const isActive = activeLanguage === language.value;
-
-                  return (
-                    <button
-                      aria-pressed={isActive}
-                      className={[
-                        "h-8 rounded px-3 text-xs font-semibold transition",
-                        isActive
-                          ? "bg-[#7c3aed] text-white"
-                          : "text-zinc-500 hover:text-zinc-200",
-                      ].join(" ")}
-                      key={language.value}
-                      onClick={() => {
-                        setActiveLanguage(language.value);
-                        setMessage("");
-                      }}
-                      type="button"
-                    >
-                      {language.label}
-                    </button>
-                  );
-                })}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              {/* Language Toggle */}
+              <div style={{ display: 'flex', backgroundColor: '#1f1f1f', borderRadius: '4px', padding: '4px' }}>
+                {(['jp', 'en', 'mn'] as const).map(lang => (
+                  <button
+                    key={lang}
+                    onClick={() => setActiveLanguage(lang)}
+                    style={{
+                      padding: '6px 16px',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      backgroundColor: activeLanguage === lang ? '#7c3aed' : 'transparent',
+                      color: activeLanguage === lang ? '#fff' : '#aaa',
+                    }}
+                  >
+                    {lang.toUpperCase()}
+                  </button>
+                ))}
               </div>
-              <div className="rounded border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-300">
+
+              <div style={{ padding: '8px 16px', backgroundColor: '#1f1f1f', borderRadius: '4px', fontSize: '14px', color: '#aaa' }}>
                 {t.role}
               </div>
+
               <button
-                className="h-10 rounded border border-zinc-700 px-4 text-sm font-medium text-zinc-200 transition hover:border-[#7c3aed] hover:text-white focus:outline-none focus:ring-2 focus:ring-[#7c3aed] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
-                type="button"
+                onClick={() => router.push('/login')}
+                style={{
+                  padding: '8px 20px',
+                  border: '1px solid #ef4444',
+                  color: '#ef4444',
+                  backgroundColor: 'transparent',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
               >
                 {t.logout}
               </button>
             </div>
           </div>
 
-          <div className="flex gap-2 text-sm">
-            <a className="rounded border border-zinc-800 px-3 py-2 text-zinc-300" href="#new-request">
-              {t.navNewRequest}
-            </a>
-            <a className="rounded border border-zinc-800 px-3 py-2 text-zinc-300" href="#my-requests">
-              {t.navMyRequests}
-            </a>
-          </div>
+          {/* Navigation Buttons */}
+            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+              <button 
+                onClick={() => router.push('/request/new')}
+                style={{ 
+                  padding: '12px 28px', 
+                  backgroundColor: '#7c3aed', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '4px', 
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                {t.navNewRequest || '新規申請'}
+              </button>
+              
+              <a href="#my-requests" style={{ padding: '12px 24px', border: '1px solid #1f1f1f', borderRadius: '4px', color: '#ddd', textDecoration: 'none' }}>
+                {t.navMyRequests}
+              </a>
+            </div>
         </div>
       </nav>
 
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
-        <section
-          className="rounded border border-zinc-800 bg-[#111111] p-5 sm:p-6"
-          id="new-request"
-        >
-          <div className="mb-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-300">
-              {t.sectionOne}
-            </p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-normal text-white">
-              {t.newRequest}
-            </h1>
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '40px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+        {/* New Request Form */}
+        <section id="new-request" style={{ backgroundColor: '#111111', border: '1px solid #1f1f1f', borderRadius: '4px', padding: '32px' }}>
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{ color: '#7c3aed', fontSize: '12px', fontWeight: '600', letterSpacing: '1px' }}>{t.sectionOne}</div>
+            <h1 style={{ fontSize: '28px', margin: '8px 0 0' }}>{t.newRequest}</h1>
           </div>
 
-          <form className="grid gap-5" onSubmit={handleSubmit}>
-            <label className="grid gap-2 text-sm font-medium text-zinc-200">
-              {t.requestType}
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#ddd' }}>{t.requestType}</label>
               <select
-                className="h-12 rounded border border-zinc-800 bg-[#0a0a0a] px-4 text-sm text-white outline-none transition focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/35"
-                onChange={(event) => setRequestType(event.target.value)}
-                required
                 value={requestType}
+                onChange={(e) => setRequestType(e.target.value)}
+                style={{ width: '100%', padding: '14px', backgroundColor: '#0a0a0a', border: '1px solid #1f1f1f', borderRadius: '4px', color: '#fff' }}
               >
-                {requestTypes.map((type) => (
-                  <option key={type.value} value={type.value}>
-                    {type.labels[activeLanguage]}
-                  </option>
+                {requestTypes.map(rt => (
+                  <option key={rt.value} value={rt.value}>{rt.labels[activeLanguage]}</option>
                 ))}
               </select>
-            </label>
+            </div>
 
-            <label className="grid gap-2 text-sm font-medium text-zinc-200">
-              {t.amount}
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#ddd' }}>{t.amount}</label>
               <input
-                className="h-12 rounded border border-zinc-800 bg-[#0a0a0a] px-4 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/35"
-                min="0"
-                onChange={(event) => setAmount(event.target.value)}
-                required
                 type="number"
                 value={amount}
-              />
-            </label>
-
-            <label className="grid gap-2 text-sm font-medium text-zinc-200">
-              {t.justification}
-              <textarea
-                className="min-h-40 resize-y rounded border border-zinc-800 bg-[#0a0a0a] px-4 py-3 text-sm leading-6 text-white outline-none transition placeholder:text-zinc-600 focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/35"
-                minLength={50}
-                onChange={(event) => setJustification(event.target.value)}
-                placeholder={t.justificationPlaceholder}
+                onChange={(e) => setAmount(e.target.value)}
+                style={{ width: '100%', padding: '14px', backgroundColor: '#0a0a0a', border: '1px solid #1f1f1f', borderRadius: '4px', color: '#fff' }}
+                placeholder="¥"
                 required
-                value={justification}
               />
-              <span className="text-xs text-zinc-500">
-                {justification.trim().length}/50 · {t.minimum}
-              </span>
-            </label>
+            </div>
 
-            <div className="grid gap-2 text-sm font-medium text-zinc-200">
-              {t.attachFile}
-              <label className="flex min-h-12 cursor-pointer items-center justify-between gap-4 rounded border border-zinc-800 bg-[#0a0a0a] px-4 py-3 text-sm text-zinc-300 transition hover:border-[#7c3aed]">
-                <span className="truncate">
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#ddd' }}>{t.justification}</label>
+              <textarea
+                value={justification}
+                onChange={(e) => setJustification(e.target.value)}
+                placeholder={t.justificationPlaceholder}
+                style={{ width: '100%', minHeight: '160px', padding: '14px', backgroundColor: '#0a0a0a', border: '1px solid #1f1f1f', borderRadius: '4px', color: '#fff', resize: 'vertical' }}
+                required
+              />
+              <div style={{ textAlign: 'right', fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                {justification.trim().length}/50 {t.minimum}
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: '#ddd' }}>{t.attachFile}</label>
+              <label style={{ 
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+                padding: '14px', border: '1px solid #1f1f1f', borderRadius: '4px', backgroundColor: '#0a0a0a', cursor: 'pointer' 
+              }}>
+                <span style={{ color: attachment ? '#ddd' : '#666' }}>
                   {attachment ? attachment.name : t.chooseFile}
                 </span>
-                <span className="rounded border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
+                <span style={{ padding: '6px 16px', border: '1px solid #3b3b3b', borderRadius: '4px', fontSize: '13px' }}>
                   {t.browse}
                 </span>
-                <input className="sr-only" onChange={handleFileChange} type="file" />
+                <input type="file" onChange={handleFileChange} style={{ display: 'none' }} />
               </label>
             </div>
 
-            {message ? (
-              <p
-                className={[
-                  "rounded border px-4 py-3 text-sm",
-                  isSubmittedMessage
-                    ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-200"
-                    : "border-red-400/20 bg-red-400/10 text-red-200",
-                ].join(" ")}
-                role="status"
-              >
+            {message && (
+              <div style={{
+                padding: '16px',
+                borderRadius: '4px',
+                border: `1px solid ${isSuccess ? '#22c55e' : '#ef4444'}`,
+                backgroundColor: isSuccess ? '#0a140a' : '#140a0a',
+                color: isSuccess ? '#22c55e' : '#ef4444'
+              }}>
                 {message}
-              </p>
-            ) : null}
+              </div>
+            )}
 
             <button
-              className="h-12 rounded border border-[#7c3aed] bg-[#7c3aed] px-5 text-sm font-semibold text-white transition hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-[#7c3aed] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
               type="submit"
+              style={{
+                padding: '14px',
+                backgroundColor: '#7c3aed',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontSize: '15px'
+              }}
             >
               {t.submit}
             </button>
           </form>
         </section>
 
-        <section
-          className="rounded border border-zinc-800 bg-[#111111] p-5 sm:p-6"
-          id="my-requests"
-        >
-          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        {/* My Requests */}
+        <section id="my-requests" style={{ backgroundColor: '#111111', border: '1px solid #1f1f1f', borderRadius: '4px', padding: '32px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '28px' }}>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-300">
-                {t.sectionTwo}
-              </p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-normal text-white">
-                {t.myRequests}
-              </h2>
+              <div style={{ color: '#7c3aed', fontSize: '12px', fontWeight: '600' }}>{t.sectionTwo}</div>
+              <h2 style={{ fontSize: '28px', margin: '8px 0 0' }}>{t.myRequests}</h2>
             </div>
-            <p className="text-sm text-zinc-500">{t.records}</p>
+            <div style={{ color: '#666' }}>{t.records}</div>
           </div>
 
-          <div className="grid gap-4">
-            {mockRequests.map((request) => {
-              const requestTypeLabel =
-                requestTypes.find((type) => type.value === request.type)?.labels[
-                  activeLanguage
-                ] ?? request.type;
-
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {mockRequests.map((req) => {
+              const typeLabel = requestTypes.find(r => r.value === req.type)?.labels[activeLanguage] || req.type;
               return (
-                <article
-                  className="rounded border border-zinc-800 bg-zinc-950/60 p-4"
-                  key={request.id}
-                >
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div key={req.id} style={{ backgroundColor: '#0a0a0a', border: '1px solid #1f1f1f', borderRadius: '4px', padding: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
                     <div>
-                      <p className="text-xs font-medium text-zinc-500">{request.id}</p>
-                      <h3 className="mt-1 text-lg font-semibold tracking-normal text-white">
-                        {requestTypeLabel}
-                      </h3>
+                      <div style={{ fontSize: '13px', color: '#666' }}>{req.id}</div>
+                      <div style={{ fontSize: '18px', fontWeight: '600', marginTop: '4px' }}>{typeLabel}</div>
                     </div>
-                    <span
-                      className={[
-                        "w-fit rounded-full border px-3 py-1 text-xs font-semibold",
-                        statusStyles[request.status],
-                      ].join(" ")}
-                    >
-                      {t[request.status]}
-                    </span>
+                    <div style={{
+                      padding: '4px 14px',
+                      borderRadius: '9999px',
+                      fontSize: '13px',
+                      backgroundColor: req.status === 'approved' ? '#052e16' : req.status === 'rejected' ? '#450a0a' : '#422006',
+                      color: req.status === 'approved' ? '#4ade80' : req.status === 'rejected' ? '#f87171' : '#fbbf24',
+                      border: `1px solid ${req.status === 'approved' ? '#166534' : req.status === 'rejected' ? '#7f1d1d' : '#854d0e'}`
+                    }}>
+                      {t[req.status]}
+                    </div>
                   </div>
 
-                  <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-3">
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', fontSize: '14px' }}>
                     <div>
-                      <dt className="text-xs text-zinc-500">{t.dateSubmitted}</dt>
-                      <dd className="mt-1 text-zinc-200">{request.submittedAt}</dd>
+                      <div style={{ color: '#666', fontSize: '12px' }}>{t.dateSubmitted}</div>
+                      <div>{req.submittedAt}</div>
                     </div>
                     <div>
-                      <dt className="text-xs text-zinc-500">{t.currentApprover}</dt>
-                      <dd className="mt-1 text-zinc-200">
-                        {t.approvers[request.approverLevel as keyof typeof t.approvers]}
-                      </dd>
+                      <div style={{ color: '#666', fontSize: '12px' }}>{t.currentApprover}</div>
+                      <div>{t.approvers[req.approverLevel as keyof typeof t.approvers]}</div>
                     </div>
                     <div>
-                      <dt className="text-xs text-zinc-500">{t.timeRemaining}</dt>
-                      <dd className="mt-1 text-zinc-200">{request.timeRemaining}</dd>
+                      <div style={{ color: '#666', fontSize: '12px' }}>{t.timeRemaining}</div>
+                      <div>{req.timeRemaining}</div>
                     </div>
-                  </dl>
+                  </div>
 
-                  <div className="mt-5">
-                    <p className="mb-3 text-xs text-zinc-500">{t.approvalChain}</p>
-                    <div className="flex items-center gap-2">
-                      {approvalLevels.map((level, index) => {
-                        const isActive = index === request.activeLevel;
-                        const isComplete = index < request.activeLevel;
-
-                        return (
-                          <div
-                            className="flex min-w-0 flex-1 items-center gap-2"
-                            key={level}
-                          >
-                            <div className="flex min-w-0 flex-col items-center gap-2">
-                              <span
-                                className={[
-                                  "h-3 w-3 rounded-full border",
-                                  isActive
-                                    ? "border-[#7c3aed] bg-[#7c3aed] shadow-[0_0_0_4px_rgba(124,58,237,0.22)]"
-                                    : isComplete
-                                      ? "border-zinc-500 bg-zinc-500"
-                                      : "border-zinc-700 bg-[#0a0a0a]",
-                                ].join(" ")}
-                              />
-                              <span
-                                className={[
-                                  "truncate text-[11px]",
-                                  isActive ? "text-violet-200" : "text-zinc-500",
-                                ].join(" ")}
-                              >
-                                {t.approvers[level]}
-                              </span>
+                  <div style={{ marginTop: '24px' }}>
+                    <div style={{ color: '#666', fontSize: '12px', marginBottom: '12px' }}>{t.approvalChain}</div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      {approvalLevels.map((level, idx) => (
+                        <div key={level} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{
+                              width: '14px',
+                              height: '14px',
+                              borderRadius: '50%',
+                              border: idx < req.activeLevel ? '2px solid #22c55e' : idx === req.activeLevel ? '2px solid #7c3aed' : '2px solid #444',
+                              backgroundColor: idx < req.activeLevel ? '#22c55e' : idx === req.activeLevel ? '#7c3aed' : '#111',
+                              margin: '0 auto 6px'
+                            }} />
+                            <div style={{ fontSize: '11px', color: idx === req.activeLevel ? '#7c3aed' : '#666' }}>
+                              {t.approvers[level]}
                             </div>
-                            {index < approvalLevels.length - 1 ? (
-                              <div className="h-px flex-1 bg-zinc-800" />
-                            ) : null}
                           </div>
-                        );
-                      })}
+                          {idx < approvalLevels.length - 1 && <div style={{ flex: 1, height: '1px', backgroundColor: '#1f1f1f', margin: '0 8px' }} />}
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </article>
+
+                  <div style={{ marginTop: '20px', textAlign: 'right' }}>
+                    <button
+                      onClick={() => router.push(`/request/${req.id}`)}
+                      style={{ padding: '8px 20px', border: '1px solid #1f1f1f', borderRadius: '4px', color: '#aaa', cursor: 'pointer' }}
+                    >
+                      View detail →
+                    </button>
+                  </div>
+                </div>
               );
             })}
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

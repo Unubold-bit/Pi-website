@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -10,25 +11,41 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const router = useRouter();
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  event.preventDefault();
 
-    const trimmedEmail = email.trim();
+  const trimmedEmail = email.trim();
 
-    if (!isValidEmail(trimmedEmail)) {
-      setError("Enter a valid corporate email. 有効な会社メールを入力してください。");
-      return;
-    }
-
-    if (!password) {
-      setError("Password is required. パスワードを入力してください。");
-      return;
-    }
-
-    setError("");
-    console.log({ email: trimmedEmail });
+  if (!isValidEmail(trimmedEmail)) {
+    setError("Enter a valid corporate email. 有効な会社メールを入力してください。");
+    return;
   }
+
+  if (!password) {
+    setError("Password is required. パスワードを入力してください。");
+    return;
+  }
+
+  setError("");
+
+  // Mock role detection by email
+  if (trimmedEmail.includes("submitter")) {
+    router.push("/dashboard/submitter");
+  } else if (trimmedEmail.includes("kakaaricho")) {
+    router.push("/dashboard/kakaaricho");
+  } else if (trimmedEmail.includes("kacho")) {
+    router.push("/dashboard/kacho");
+  } else if (trimmedEmail.includes("bucho")) {
+    router.push("/dashboard/bucho");
+  } else if (trimmedEmail.includes("shacho")) {
+    router.push("/dashboard/shacho");
+  } else {
+    // Default → submitter
+    router.push("/dashboard/submitter");
+  }
+}
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#0a0a0a] px-4 py-8 text-zinc-50">

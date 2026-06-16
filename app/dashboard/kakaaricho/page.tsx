@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Language = "jp" | "en" | "mn";
 type FlagType = "gps" | "duplicate" | "amount";
@@ -220,7 +221,7 @@ export default function KakaarichoDashboardPage() {
   const [rejectReason, setRejectReason] = useState("");
   const [rejectError, setRejectError] = useState("");
   const t = text[activeLanguage];
-
+  const router = useRouter();
   const rejectCount = useMemo(
     () => Object.values(actions).filter((action) => action.state === "rejected").length,
     [actions],
@@ -313,7 +314,16 @@ export default function KakaarichoDashboardPage() {
                 })}
               </div>
               <button
-                className="h-10 rounded border border-[#1f1f1f] px-4 text-sm font-medium text-zinc-200 transition hover:border-[#7c3aed] hover:text-white focus:outline-none focus:ring-2 focus:ring-[#7c3aed] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
+                onClick={() => router.push('/login')}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: 'transparent',
+                  border: '1px solid #ef4444',
+                  color: '#ef4444',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
                 type="button"
               >
                 {t.logout}
@@ -425,23 +435,44 @@ export default function KakaarichoDashboardPage() {
                     </div>
 
                     <div className="flex flex-col gap-2 sm:flex-row lg:flex-col">
-                      <button
-                        className="h-10 rounded border border-[#7c3aed] bg-[#7c3aed] px-4 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-800 disabled:text-zinc-500"
-                        disabled={isClosed}
-                        onClick={() => handleForward(request.id)}
-                        type="button"
-                      >
-                        {t.forward}
-                      </button>
-                      <button
-                        className="h-10 rounded border border-[#ef4444] bg-[#ef4444] px-4 text-sm font-semibold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-800 disabled:text-zinc-500"
-                        disabled={isClosed}
-                        onClick={() => openRejectModal(request.id)}
-                        type="button"
-                      >
-                        {t.reject}
-                      </button>
-                    </div>
+                    {/* View Detail Button */}
+                    <button
+                      onClick={() => router.push(`/request/${request.id}`)}
+                      style={{
+                        padding: '10px 14px',
+                        border: '1px solid #1f1f1f',
+                        backgroundColor: 'transparent',
+                        color: '#aaa',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        width: '100%'
+                      }}
+                      type="button"
+                    >
+                      {activeLanguage === 'jp' ? '詳細を見る' : 'View Detail'}
+                    </button>
+
+                    {/* Existing Forward Button */}
+                    <button
+                      className="h-10 rounded border border-[#7c3aed] bg-[#7c3aed] px-4 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-800 disabled:text-zinc-500"
+                      disabled={isClosed}
+                      onClick={() => handleForward(request.id)}
+                      type="button"
+                    >
+                      {t.forward}
+                    </button>
+
+                    {/* Existing Reject Button */}
+                    <button
+                      className="h-10 rounded border border-[#ef4444] bg-[#ef4444] px-4 text-sm font-semibold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-800 disabled:text-zinc-500"
+                      disabled={isClosed}
+                      onClick={() => openRejectModal(request.id)}
+                      type="button"
+                    >
+                      {t.reject}
+                    </button>
+                  </div>
                   </div>
                 </article>
               );

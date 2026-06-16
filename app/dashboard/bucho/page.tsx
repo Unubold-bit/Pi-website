@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Lang = "jp" | "en";
 type RequestType = "expense" | "sop" | "proposal";
@@ -200,7 +201,7 @@ export default function BuchoDashboard() {
   const [rejectOther, setRejectOther] = useState("");
   const [reviseText, setReviseText] = useState("");
   const [doneIds, setDoneIds] = useState<Record<string, "approved" | "rejected" | "revised">>({});
-
+  const router = useRouter();
   const t = lang === "jp" ? jp : en;
 
   const pending = MOCK_PENDING.filter((r) => !doneIds[r.id]);
@@ -236,8 +237,13 @@ export default function BuchoDashboard() {
           <button onClick={() => setLang(lang === "en" ? "jp" : "en")} style={{ background: "#1f1f1f", border: "1px solid #2f2f2f", color: "#aaa", borderRadius: "4px", padding: "4px 12px", cursor: "pointer", fontSize: "12px", fontWeight: 600 }}>
             {lang === "en" ? "JP" : "EN"}
           </button>
-          <button style={{ background: "transparent", border: "1px solid #2f2f2f", color: "#888", borderRadius: "4px", padding: "4px 12px", cursor: "pointer", fontSize: "12px" }}>{t.logout}</button>
-        </div>
+          <button 
+            onClick={() => router.push('/login')}
+            style={{ background: "transparent", border: "1px solid #ef4444", color: "#ef4444", borderRadius: "4px", padding: "4px 12px", cursor: "pointer", fontSize: "12px" }}
+            >
+            {t.logout}
+          </button>        
+          </div>
       </nav>
 
       <div style={{ maxWidth: "860px", margin: "0 auto", padding: "36px 24px 80px" }}>
@@ -337,7 +343,10 @@ export default function BuchoDashboard() {
                   <button onClick={() => setModal({ type: "reject", requestId: req.id })} style={{ flex: 1, padding: "10px", borderRadius: "4px", border: "1px solid #3a1a1a", background: "#1f0d0d", color: "#ef4444", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
                     ✕ {t.reject}
                   </button>
-                  <button style={{ padding: "10px 14px", borderRadius: "4px", border: "1px solid #1f1f1f", background: "transparent", color: "#666", fontSize: "12px", cursor: "pointer" }}>
+                  <button 
+                    onClick={() => router.push(`/request/${req.id}`)}
+                    style={{ padding: '10px 14px', borderRadius: "4px", border: "1px solid #1f1f1f", background: "transparent", color: "#666", fontSize: "12px", cursor: "pointer" }}
+                  >
                     {t.viewDetail}
                   </button>
                 </div>

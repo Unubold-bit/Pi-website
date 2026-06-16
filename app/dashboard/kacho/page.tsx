@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Language = "jp" | "en" | "mn";
 type RequestStatus = "pending" | "approved" | "rejected" | "revision";
@@ -267,7 +268,7 @@ export default function KachoDashboardPage() {
   const [revisionGuidance, setRevisionGuidance] = useState("");
   const [revisionError, setRevisionError] = useState("");
   const t = text[activeLanguage];
-
+  const router = useRouter();
   const rejectingRequest = pendingRequests.find((request) => request.id === rejectingId);
   const revisionRequest = pendingRequests.find((request) => request.id === revisionId);
 
@@ -410,7 +411,16 @@ export default function KachoDashboardPage() {
               })}
             </div>
             <button
-              className="h-10 rounded border border-[#1f1f1f] px-4 text-sm font-medium text-zinc-200 transition hover:border-[#7c3aed] hover:text-white focus:outline-none focus:ring-2 focus:ring-[#7c3aed] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
+              onClick={() => router.push('/login')}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: 'transparent',
+                border: '1px solid #ef4444',
+                color: '#ef4444',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
               type="button"
             >
               {t.logout}
@@ -527,7 +537,25 @@ export default function KachoDashboardPage() {
                       ) : null}
                     </div>
 
-                    <div className="grid gap-2 sm:grid-cols-3 lg:w-40 lg:grid-cols-1">
+                    <div className="grid gap-2 sm:grid-cols-4 lg:w-52 lg:grid-cols-1">
+                      {/* View Detail Button */}
+                      <button
+                        onClick={() => router.push(`/request/${request.id}`)}
+                        style={{
+                          padding: '10px 12px',
+                          border: '1px solid #1f1f1f',
+                          backgroundColor: 'transparent',
+                          color: '#aaa',
+                          borderRadius: '4px',
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          width: '100%'
+                        }}
+                        type="button"
+                      >
+                        {activeLanguage === 'jp' ? '詳細を見る' : 'View Detail'}
+                      </button>
+
                       <button
                         className="h-10 rounded border border-[#7c3aed] bg-[#7c3aed] px-4 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-800 disabled:text-zinc-500"
                         disabled={isClosed}
@@ -536,6 +564,7 @@ export default function KachoDashboardPage() {
                       >
                         {t.approve}
                       </button>
+
                       <button
                         className="h-10 rounded border border-[#ef4444] bg-[#ef4444] px-4 text-sm font-semibold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-800 disabled:text-zinc-500"
                         disabled={isClosed}
@@ -544,6 +573,7 @@ export default function KachoDashboardPage() {
                       >
                         {t.reject}
                       </button>
+
                       <button
                         className="h-10 rounded border border-[#f59e0b] bg-[#f59e0b] px-4 text-sm font-semibold text-black transition hover:bg-amber-500 disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-800 disabled:text-zinc-500"
                         disabled={isClosed}
