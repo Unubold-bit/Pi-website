@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Lang = "jp" | "en";
 type RequestType = "expense" | "sop" | "proposal" | null;
@@ -126,7 +127,7 @@ export default function NewRequestPage() {
   const [receiptFile, setReceiptFile] = useState<string | null>(null);
   const [justification, setJustification] = useState("");
   const [selfieVerified, setSelfieVerified] = useState(false);
-
+  const router = useRouter();
   // SOP fields
   const [targetDoc, setTargetDoc] = useState("");
   const [scope, setScope] = useState<SopScope | "">("");
@@ -202,7 +203,7 @@ export default function NewRequestPage() {
     minHeight: "100vh",
     color: "#e5e5e5",
   };
-
+  
   return (
     <div style={s}>
       {/* Navbar */}
@@ -213,7 +214,20 @@ export default function NewRequestPage() {
           <button onClick={() => setLang(lang === "en" ? "jp" : "en")} style={{ background: "#1f1f1f", border: "1px solid #2f2f2f", color: "#aaa", borderRadius: "4px", padding: "4px 12px", cursor: "pointer", fontSize: "12px", fontWeight: 600 }}>
             {lang === "en" ? "JP" : "EN"}
           </button>
-          <button style={{ background: "transparent", border: "1px solid #2f2f2f", color: "#888", borderRadius: "4px", padding: "4px 12px", cursor: "pointer", fontSize: "12px" }}>{t.logout}</button>
+            <button 
+            onClick={() => router.push('/login')}
+            style={{ 
+                background: "transparent", 
+                border: "1px solid #ef4444", 
+                color: "#ef4444", 
+                borderRadius: "4px", 
+                padding: "4px 12px", 
+                cursor: "pointer", 
+                fontSize: "12px" 
+            }}
+            >
+            {t.logout}
+            </button>        
         </div>
       </nav>
 

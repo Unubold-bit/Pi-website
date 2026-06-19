@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Lang = "jp" | "en";
 type Status = "pending" | "approved" | "rejected" | "revision" | "escalated";
@@ -158,7 +159,7 @@ export default function RequestDetailPage() {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState(MOCK_COMMENTS);
   const [actionDone, setActionDone] = useState<"approved" | "rejected" | "revised" | null>(null);
-
+  const router = useRouter();
   const t = lang === "jp" ? jp : en;
 
   const slaHours = 31;
@@ -188,7 +189,20 @@ export default function RequestDetailPage() {
         <span style={{ color: "#7c3aed", fontWeight: 700, fontSize: "18px", letterSpacing: "-0.5px" }}>{t.logo}</span>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <button onClick={() => setLang(lang === "en" ? "jp" : "en")} style={btnStyle("#1f1f1f", "#aaa")}>{lang === "en" ? "JP" : "EN"}</button>
-          <button style={btnStyle("transparent", "#888")}>{t.logout}</button>
+            <button 
+            onClick={() => router.push('/login')}
+            style={{ 
+                background: "transparent", 
+                border: "1px solid #ef4444", 
+                color: "#ef4444", 
+                borderRadius: "4px", 
+                padding: "4px 12px", 
+                cursor: "pointer", 
+                fontSize: "12px" 
+            }}
+            >
+            {t.logout}
+            </button>        
         </div>
       </nav>
 
