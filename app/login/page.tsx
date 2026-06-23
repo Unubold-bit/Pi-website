@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -13,7 +14,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
   event.preventDefault();
 
   const trimmedEmail = email.trim();
@@ -30,23 +31,36 @@ export default function LoginPage() {
 
   setError("");
 
-  // Mock role detection by email
-  if (trimmedEmail.includes("submitter")) {
-    router.push("/dashboard/submitter");
-  } else if (trimmedEmail.includes("kakaaricho")) {
-    router.push("/dashboard/kakaaricho");
-  } else if (trimmedEmail.includes("kacho")) {
-    router.push("/dashboard/kacho");
-  } else if (trimmedEmail.includes("bucho")) {
-    router.push("/dashboard/bucho");
-  } else if (trimmedEmail.includes("shacho")) {
-    router.push("/dashboard/shacho");
-  } else {
-    // Default → submitter
-    router.push("/dashboard/submitter");
-  }
-}
+  // Query the database for this user
+  const { data: user, error: dbError } = await supabase
+    .from("users")
+    .select("id, rank, full_name")
+    .eq("email", trimmedEmail)
+    .single();
 
+  if (dbError || !user) {
+    setError("Account not found. アカウントが見つかりません。");
+    return;
+  }
+
+  // Save logged-in user info in the browser
+  localStorage.setItem("hanko_user_id", user.id);
+  localStorage.setItem("hanko_user_name", user.full_name);
+  localStorage.setItem("hanko_user_rank", user.rank);
+
+  // Route based on rank from database
+  const rankToPath: Record<string, string> = {
+    "担当": "/dashboard/submitter",
+    "主任": "/dashboard/submitter",
+    "係長": "/dashboard/kakaaricho",
+    "課長": "/dashboard/kacho",
+    "部長": "/dashboard/bucho",
+    "社長": "/dashboard/shacho",
+  };
+
+  const path = rankToPath[user.rank] ?? "/dashboard/submitter";
+  router.push(path);
+}
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#0a0a0a] px-4 py-8 text-zinc-50">
       <section className="w-full max-w-sm rounded border border-[#1f1f1f] bg-[#111111] p-6 shadow-xl shadow-black/30">
@@ -108,3 +122,5 @@ export default function LoginPage() {
     </main>
   );
 }
+
+
